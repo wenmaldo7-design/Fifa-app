@@ -1,0 +1,262 @@
+<app-login *ngIf="!isLoggedIn" (loggedIn)="onLogin()"></app-login>
+
+<div *ngIf="isLoggedIn">
+
+  <header class="app-header">
+    <div class="header-brand">
+      <span class="header-icon">⚽</span>
+      <span class="header-title">FIFA Players</span>
+    </div>
+    <button class="btn-logout" (click)="logout()">Cerrar sesión</button>
+  </header>
+
+  <div class="container">
+
+    <div class="filters-card">
+      <div class="filters">
+        <input type="text" placeholder="🔍 Jugador" [(ngModel)]="name" (keyup.enter)="search()" />
+        <input type="text" placeholder="🏟️ Club" [(ngModel)]="club" (keyup.enter)="search()" />
+        <input type="text" placeholder="🎽 Posición" [(ngModel)]="position" (keyup.enter)="search()" />
+        <button class="btn-primary" (click)="search()">Buscar</button>
+        <button class="btn-secondary" (click)="downloadCsv()" [disabled]="downloadingCsv">
+          {{ downloadingCsv ? 'Descargando...' : '⬇ CSV' }}
+        </button>
+        <button class="btn-create" (click)="openCreateForm()">+ Nuevo jugador</button>
+      </div>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 0">
+      <button class="btn-page" [disabled]="page === 1" (click)="goTo(1)">«</button>
+      <button class="btn-page" [disabled]="page === 1" (click)="goTo(page - 1)">‹</button>
+      <span *ngIf="pageRange[0] > 1" class="page-dots">…</span>
+      <button *ngFor="let p of pageRange" class="btn-page" [class.active]="p === page" (click)="goTo(p)">{{ p }}</button>
+      <span *ngIf="pageRange[pageRange.length - 1] < totalPages" class="page-dots">…</span>
+      <button class="btn-page" [disabled]="page === totalPages" (click)="goTo(page + 1)">›</button>
+      <button class="btn-page" [disabled]="page === totalPages" (click)="goTo(totalPages)">»</button>
+      <span class="page-info">{{ total }} jugadores · {{ totalPages }} páginas</span>
+    </div>
+
+    <p *ngIf="players.length === 0 && !loading" class="empty-state">
+      No se encontraron jugadores.
+    </p>
+
+    <div class="table-wrapper" *ngIf="players.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>Jugador</th>
+            <th>Club</th>
+            <th>Nacionalidad</th>
+            <th>Posición</th>
+            <th>Overall</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let player of players" (click)="showPlayer(player)">
+            <td class="player-name">{{ player.short_name }}</td>
+            <td>{{ player.club_name }}</td>
+            <td>{{ player.nationality_name }}</td>
+            <td>
+              <span class="pos-badge" [ngClass]="positionClass(player.player_positions)">
+                {{ player.player_positions }}
+              </span>
+            </td>
+            <td>
+              <span class="overall-badge" [ngClass]="overallClass(player.overall)">
+                {{ player.overall }}
+              </span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="pagination" *ngIf="totalPages > 0">
+      <button class="btn-page" [disabled]="page === 1" (click)="goTo(1)">«</button>
+      <button class="btn-page" [disabled]="page === 1" (click)="goTo(page - 1)">‹</button>
+      <span *ngIf="pageRange[0] > 1" class="page-dots">…</span>
+      <button *ngFor="let p of pageRange" class="btn-page" [class.active]="p === page" (click)="goTo(p)">{{ p }}</button>
+      <span *ngIf="pageRange[pageRange.length - 1] < totalPages" class="page-dots">…</span>
+      <button class="btn-page" [disabled]="page === totalPages" (click)="goTo(page + 1)">›</button>
+      <button class="btn-page" [disabled]="page === totalPages" (click)="goTo(totalPages)">»</button>
+    </div>
+
+  </div>
+
+  <div class="modal-backdrop" *ngIf="selectedPlayer">
+    <div class="modal-scroll">
+      <div class="modal-box">
+
+        <div class="modal-header">
+          <h2>{{ selectedPlayer.short_name }}</h2>
+          <span class="overall-badge lg" [ngClass]="overallClass(selectedPlayer.overall)">
+            {{ selectedPlayer.overall }}
+          </span>
+          <button class="btn-close" (click)="closeModal()">✕</button>
+        </div>
+
+        <div class="modal-tabs">
+          <button [class.active]="activeTab === 'info'" (click)="setTab('info')">Info</button>
+          <button [class.active]="activeTab === 'skills'" (click)="setTab('skills')">Skills</button>
+          <button [class.active]="activeTab === 'evolucion'" (click)="setTab('evolucion')">📈 Evolución</button>
+        </div>
+
+        <!-- Tab Info -->
+        <div *ngIf="activeTab === 'info'">
+          <p *ngIf="editError" class="error-message">{{ editError }}</p>
+
+          <div class="modal-info" *ngIf="!editingPlayer">
+            <div class="info-row"><span class="info-label">Club</span><span>{{ selectedPlayer.club_name }}</span></div>
+            <div class="info-row"><span class="info-label">Nacionalidad</span><span>{{ selectedPlayer.nationality_name }}</span></div>
+            <div class="info-row">
+              <span class="info-label">Posición</span>
+              <span class="pos-badge" [ngClass]="positionClass(selectedPlayer.player_positions)">{{ selectedPlayer.player_positions }}</span>
+            </div>
+          </div>
+
+          <div class="modal-edit" *ngIf="editingPlayer">
+            <input [(ngModel)]="selectedPlayer.club_name" placeholder="Club" />
+            <input [(ngModel)]="selectedPlayer.nationality_name" placeholder="Nacionalidad" />
+            <input [(ngModel)]="selectedPlayer.player_positions" placeholder="Posición" />
+            <input type="number" [(ngModel)]="selectedPlayer.overall" placeholder="Overall" />
+          </div>
+
+          <div class="modal-buttons">
+            <button class="btn-edit" *ngIf="!editingPlayer" (click)="enableEdit()">✏️ Editar</button>
+            <button class="btn-save" *ngIf="editingPlayer" (click)="savePlayer()">💾 Guardar</button>
+            <button class="btn-delete" (click)="deletePlayer()">🗑️ Eliminar</button>
+          </div>
+        </div>
+
+        <!-- Tab Skills -->
+        <div *ngIf="activeTab === 'skills'">
+          <div class="stats-section">
+            <h4 class="stats-title">Estadísticas</h4>
+            <div class="stat-row">
+              <span class="stat-label">PAC</span>
+              <div class="stat-bar"><div class="stat-fill pace" [style.width.%]="selectedPlayer.pace"></div></div>
+              <span class="stat-value">{{ selectedPlayer.pace }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">SHO</span>
+              <div class="stat-bar"><div class="stat-fill shooting" [style.width.%]="selectedPlayer.shooting"></div></div>
+              <span class="stat-value">{{ selectedPlayer.shooting }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">PAS</span>
+              <div class="stat-bar"><div class="stat-fill passing" [style.width.%]="selectedPlayer.passing"></div></div>
+              <span class="stat-value">{{ selectedPlayer.passing }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">DRI</span>
+              <div class="stat-bar"><div class="stat-fill dribbling" [style.width.%]="selectedPlayer.dribbling"></div></div>
+              <span class="stat-value">{{ selectedPlayer.dribbling }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">DEF</span>
+              <div class="stat-bar"><div class="stat-fill defending" [style.width.%]="selectedPlayer.defending"></div></div>
+              <span class="stat-value">{{ selectedPlayer.defending }}</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">PHY</span>
+              <div class="stat-bar"><div class="stat-fill physic" [style.width.%]="selectedPlayer.physic"></div></div>
+              <span class="stat-value">{{ selectedPlayer.physic }}</span>
+            </div>
+          </div>
+          <canvas id="skillsChart" width="400" height="300"></canvas>
+          <div class="chart-legend">
+            <span class="legend-item"><span class="legend-dot" style="background:#22c55e"></span>Elite (85+)</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#3b82f6"></span>Bueno (70–84)</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#f59e0b"></span>Regular (55–69)</span>
+            <span class="legend-item"><span class="legend-dot" style="background:#ef4444"></span>Bajo (&lt;55)</span>
+          </div>
+        </div>
+
+        <!-- Tab Evolución -->
+        <div *ngIf="activeTab === 'evolucion'">
+          <div *ngIf="loadingTimeline" class="tl-loading">Cargando historial...</div>
+          <div *ngIf="timelineError" class="tl-error">{{ timelineError }}</div>
+
+          <div *ngIf="!loadingTimeline && timeline.length > 0">
+            <div class="tl-versions-count">{{ timeline.length }} versiones encontradas</div>
+            <div class="tl-table-wrapper">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Edición FIFA</th>
+                    <th>Club</th>
+                    <th>Overall</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr *ngFor="let v of timeline">
+                    <td><span class="version-badge">FIFA {{ v.fifa_version }}</span></td>
+                    <td>{{ v.club_name }}</td>
+                    <td><span class="tl-overall-val" [ngClass]="overallClass(v.overall)">{{ v.overall }}</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="analyze-section">
+              <button class="btn-analyze" (click)="analyze()" [disabled]="loadingAnalysis()">
+                {{ loadingAnalysis() ? '⏳ Analizando...' : '🤖 Analizar evolución con IA' }}
+              </button>
+              <div *ngIf="analysisError()" class="tl-error">{{ analysisError() }}</div>
+              <div *ngIf="analysis()" class="analysis-result">
+                <div class="analysis-header"><span>🤖</span><strong>Análisis con IA</strong></div>
+                <p>{{ analysis() }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="!loadingTimeline && timeline.length === 0 && !timelineError" class="tl-loading">
+            No se encontró historial para este jugador.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Crear Jugador -->
+  <div class="modal-backdrop" *ngIf="showCreateForm">
+    <div class="modal-scroll">
+      <div class="modal-box">
+
+        <div class="modal-header">
+          <h2>Nuevo jugador</h2>
+          <button class="btn-close" (click)="closeCreateForm()">✕</button>
+        </div>
+
+        <p *ngIf="createError" class="error-message">{{ createError }}</p>
+
+        <div class="modal-edit">
+          <input [(ngModel)]="newPlayer.short_name" placeholder="Nombre (ej: L. Messi)" />
+          <input [(ngModel)]="newPlayer.club_name" placeholder="Club" />
+          <input [(ngModel)]="newPlayer.nationality_name" placeholder="Nacionalidad" />
+          <input [(ngModel)]="newPlayer.player_positions" placeholder="Posición (ej: ST, CF)" />
+          <input type="number" [(ngModel)]="newPlayer.fifa_version" placeholder="Versión FIFA (ej: 23)" />
+        </div>
+
+        <h4 class="stats-title">Overall y habilidades</h4>
+        <div class="create-stats-grid">
+          <label>Overall<input type="number" [(ngModel)]="newPlayer.overall" min="1" max="100" /></label>
+          <label>Pace<input type="number" [(ngModel)]="newPlayer.pace" min="0" max="100" /></label>
+          <label>Shooting<input type="number" [(ngModel)]="newPlayer.shooting" min="0" max="100" /></label>
+          <label>Passing<input type="number" [(ngModel)]="newPlayer.passing" min="0" max="100" /></label>
+          <label>Dribbling<input type="number" [(ngModel)]="newPlayer.dribbling" min="0" max="100" /></label>
+          <label>Defending<input type="number" [(ngModel)]="newPlayer.defending" min="0" max="100" /></label>
+          <label>Physic<input type="number" [(ngModel)]="newPlayer.physic" min="0" max="100" /></label>
+        </div>
+
+        <div class="modal-buttons">
+          <button class="btn-save" (click)="createPlayer()">Crear jugador</button>
+          <button class="btn-secondary" (click)="closeCreateForm()">Cancelar</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>

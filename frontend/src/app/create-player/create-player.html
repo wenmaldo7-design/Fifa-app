@@ -1,0 +1,82 @@
+<div class="create-player">
+
+  <h2>Crear jugador</h2>
+
+  <form
+    [formGroup]="form"
+    (ngSubmit)="createPlayer()"
+  >
+
+    <input
+      type="text"
+      placeholder="Nombre"
+      formControlName="name"
+    />
+
+    <input
+      type="text"
+      placeholder="Club"
+      formControlName="club"
+    />
+
+    <input
+      type="text"
+      placeholder="Nacionalidad"
+      formControlName="nationality"
+    />
+
+    <input
+      type="text"
+      placeholder="Posición"
+      formControlName="position"
+    />
+
+    <input
+      type="number"
+      placeholder="Overall"
+      formControlName="overall"
+    />
+
+    <input
+      type="number"
+      placeholder="Pace"
+      formControlName="pace"
+    />
+
+    <input
+      type="number"
+      placeholder="Shooting"
+      formControlName="shooting"
+    />
+
+    <input
+      type="number"
+      placeholder="Passing"
+      formControlName="passing"
+    />
+
+    <input
+      type="number"
+      placeholder="Dribbling"
+      formControlName="dribbling"
+    />
+
+    <input
+      type="number"
+      placeholder="Defending"
+      formControlName="defending"
+    />
+
+    <input
+      type="number"
+      placeholder="Physical"
+      formControlName="physical"
+    />
+
+    <button type="submit">
+      Crear jugador
+    </button>
+
+  </form>
+
+</div>

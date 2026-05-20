@@ -1,0 +1,23 @@
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-logo">⚽</div>
+    <h1>FIFA Players</h1>
+    <p class="login-subtitle">{{ mode === 'login' ? 'Iniciá sesión para continuar' : 'Creá tu cuenta' }}</p>
+
+    <input type="email" placeholder="Email" [(ngModel)]="email" (keyup.enter)="submit()" />
+    <input type="password" placeholder="Contraseña" [(ngModel)]="password" (keyup.enter)="submit()" />
+    <input *ngIf="mode === 'register'" type="password" placeholder="Confirmar contraseña" [(ngModel)]="confirmPassword" (keyup.enter)="submit()" />
+
+    <button (click)="submit()">
+      {{ mode === 'login' ? 'Ingresar' : 'Crear cuenta' }}
+    </button>
+
+    <p class="error" *ngIf="errorMessage">{{ errorMessage }}</p>
+    <p class="success" *ngIf="successMessage">{{ successMessage }}</p>
+
+    <p class="toggle-link">
+      {{ mode === 'login' ? '¿No tenés cuenta?' : '¿Ya tenés cuenta?' }}
+      <a (click)="toggleMode()">{{ mode === 'login' ? 'Registrarse' : 'Iniciar sesión' }}</a>
+    </p>
+  </div>
+</div>

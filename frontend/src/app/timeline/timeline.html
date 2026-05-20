@@ -1,0 +1,66 @@
+<div class="timeline-container">
+
+  <div class="timeline-header">
+    <span class="timeline-icon">📈</span>
+    <h2>Línea de tiempo</h2>
+    <p class="timeline-subtitle">Evolución de habilidades por versión FIFA</p>
+  </div>
+
+  <div class="search-bar">
+    <input
+      type="text"
+      placeholder="🔍 Buscar jugador..."
+      [(ngModel)]="searchName"
+      (keyup.enter)="search()"
+    />
+    <button class="btn-search" (click)="search()">Buscar</button>
+  </div>
+
+  <div *ngIf="loading" class="tl-loading">Cargando...</div>
+  <div *ngIf="error" class="tl-error">{{ error }}</div>
+
+  <div *ngIf="players.length > 0">
+
+    <div class="tl-player-header">
+      <span class="tl-player-name">{{ players[0].short_name }}</span>
+      <span class="tl-versions-count">{{ players.length }} versiones</span>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Jugador</th>
+            <th>Club</th>
+            <th>Edición FIFA</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of players">
+            <td class="tl-player-name-cell">{{ p.short_name }}</td>
+            <td>{{ p.club_name }}</td>
+            <td><span class="version-badge">FIFA {{ p.fifa_version }}</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="analyze-section">
+      <button class="btn-analyze" (click)="analyze()" [disabled]="loadingAnalysis">
+        {{ loadingAnalysis ? '⏳ Analizando...' : '🤖 Analizar evolución con IA' }}
+      </button>
+
+      <div *ngIf="analysisError" class="tl-error">{{ analysisError }}</div>
+
+      <div *ngIf="analysis" class="analysis-result">
+        <div class="analysis-header">
+          <span>🤖</span>
+          <strong>Análisis con IA</strong>
+        </div>
+        <p>{{ analysis }}</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
