@@ -18,23 +18,27 @@
   <div class="container">
 
     <div class="filters-card">
-      <div class="gender-toggle">
-        <button [class.active]="gender === 'M'" (click)="setGender('M')">
-          <i class="bi bi-gender-male"></i> Masculino
-        </button>
-        <button [class.active]="gender === 'F'" (click)="setGender('F')">
-          <i class="bi bi-gender-female"></i> Femenino
-        </button>
-      </div>
-      <div class="filters">
-        <input type="text" placeholder="Jugador" [(ngModel)]="name" (keyup.enter)="search()" />
-        <input type="text" placeholder="Club" [(ngModel)]="club" (keyup.enter)="search()" />
-        <input type="text" placeholder="Posición" [(ngModel)]="position" (keyup.enter)="search()" />
-        <button class="btn-primary" (click)="search()"><i class="bi bi-search"></i> Buscar</button>
-        <button class="btn-secondary" (click)="downloadCsv()" [disabled]="downloadingCsv()">
-          <i class="bi bi-download"></i> {{ downloadingCsv() ? 'Descargando...' : 'CSV' }}
-        </button>
+      <div class="filters-top">
+        <div class="gender-toggle">
+          <button [class.active]="gender === 'M'" (click)="setGender('M')">
+            <i class="bi bi-gender-male"></i> Masculino
+          </button>
+          <button [class.active]="gender === 'F'" (click)="setGender('F')">
+            <i class="bi bi-gender-female"></i> Femenino
+          </button>
+        </div>
         <button class="btn-create" (click)="openCreateForm()"><i class="bi bi-person-plus-fill"></i> Nuevo jugador</button>
+      </div>
+      <div class="filters-bottom">
+        <div class="filters-inputs">
+          <input type="text" placeholder="Jugador" [(ngModel)]="name" (keyup.enter)="search()" />
+          <input type="text" placeholder="Club" [(ngModel)]="club" (keyup.enter)="search()" />
+          <input type="text" placeholder="Posición" [(ngModel)]="position" (keyup.enter)="search()" />
+          <input type="text" placeholder="Nacionalidad" [(ngModel)]="nationality" (keyup.enter)="search()" />
+        </div>
+        <div class="filters-actions">
+          <button class="btn-primary" (click)="search()"><i class="bi bi-search"></i> Buscar</button>
+        </div>
       </div>
     </div>
 
@@ -42,8 +46,9 @@
       <button class="btn-page" [disabled]="page === 1" (click)="goTo(1)">«</button>
       <button class="btn-page" [disabled]="page === 1" (click)="goTo(page - 1)">‹</button>
       <span *ngIf="pageRange[0] > 1" class="page-dots">…</span>
-      <button *ngFor="let p of pageRange" class="btn-page" [class.active]="p === page" (click)="goTo(p)">{{ p }}</button>
+      <button *ngFor="let p of pageRange" class="btn-page page-num" [class.active]="p === page" (click)="goTo(p)">{{ p }}</button>
       <span *ngIf="pageRange[pageRange.length - 1] < totalPages" class="page-dots">…</span>
+      <span class="page-current">{{ page }} / {{ totalPages }}</span>
       <button class="btn-page" [disabled]="page === totalPages" (click)="goTo(page + 1)">›</button>
       <button class="btn-page" [disabled]="page === totalPages" (click)="goTo(totalPages)">»</button>
       <span class="page-info">{{ total() }} jugadores · {{ totalPages }} páginas</span>
@@ -57,18 +62,23 @@
       <table>
         <thead>
           <tr>
+            <th></th>
             <th>Jugador</th>
             <th>Club</th>
-            <th>Nacionalidad</th>
+            <th class="col-nationality">Nacionalidad</th>
             <th>Posición</th>
             <th>Overall</th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let player of players()" (click)="showPlayer(player)">
+            <td class="player-avatar-cell">
+              <img *ngIf="player.player_face_url" [src]="player.player_face_url" class="player-avatar" referrerpolicy="no-referrer" (error)="player.player_face_url = ''" />
+              <i *ngIf="!player.player_face_url" class="bi bi-person-circle player-avatar-icon"></i>
+            </td>
             <td class="player-name">{{ player.short_name }}</td>
             <td>{{ player.club_name || 'Sin club' }}</td>
-            <td>{{ player.nationality_name }}</td>
+            <td class="col-nationality">{{ player.nationality_name }}</td>
             <td>
               <span class="pos-badge" [ngClass]="positionClass(player.player_positions)">
                 {{ player.player_positions }}
@@ -88,10 +98,17 @@
       <button class="btn-page" [disabled]="page === 1" (click)="goTo(1)">«</button>
       <button class="btn-page" [disabled]="page === 1" (click)="goTo(page - 1)">‹</button>
       <span *ngIf="pageRange[0] > 1" class="page-dots">…</span>
-      <button *ngFor="let p of pageRange" class="btn-page" [class.active]="p === page" (click)="goTo(p)">{{ p }}</button>
+      <button *ngFor="let p of pageRange" class="btn-page page-num" [class.active]="p === page" (click)="goTo(p)">{{ p }}</button>
       <span *ngIf="pageRange[pageRange.length - 1] < totalPages" class="page-dots">…</span>
+      <span class="page-current">{{ page }} / {{ totalPages }}</span>
       <button class="btn-page" [disabled]="page === totalPages" (click)="goTo(page + 1)">›</button>
       <button class="btn-page" [disabled]="page === totalPages" (click)="goTo(totalPages)">»</button>
+    </div>
+
+    <div class="csv-bar" *ngIf="players().length > 0 || total() > 0">
+      <button class="btn-csv" (click)="downloadCsv()" [disabled]="downloadingCsv()">
+        <i class="bi bi-download"></i> {{ downloadingCsv() ? 'Descargando...' : 'Descargar CSV' }}
+      </button>
     </div>
 
   </div>
@@ -101,6 +118,8 @@
       <div class="modal-box">
 
         <div class="modal-header">
+          <img *ngIf="selectedPlayer.player_face_url" [src]="selectedPlayer.player_face_url" class="modal-avatar" referrerpolicy="no-referrer" (error)="selectedPlayer.player_face_url = ''" />
+          <i *ngIf="!selectedPlayer.player_face_url" class="bi bi-person-circle modal-avatar-icon"></i>
           <h2>{{ selectedPlayer.short_name }}</h2>
           <span class="overall-badge lg" [ngClass]="overallClass(selectedPlayer.overall)">
             {{ selectedPlayer.overall }}

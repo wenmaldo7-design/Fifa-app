@@ -12,8 +12,8 @@ export class PlayersService {
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
-  getPlayers(page = 1, limit = 20, name = '', club = '', position = '', gender = 'M') {
-    const params = `page=${page}&limit=${limit}&name=${name}&club=${club}&position=${position}&gender=${gender}&t=${Date.now()}`;
+  getPlayers(page = 1, limit = 20, name = '', club = '', position = '', gender = 'M', nationality = '') {
+    const params = `page=${page}&limit=${limit}&name=${name}&club=${club}&position=${position}&nationality=${nationality}&gender=${gender}&t=${Date.now()}`;
     return this.http.get(`${this.apiUrl}?${params}`, { headers: this.headers });
   }
 
@@ -33,11 +33,12 @@ export class PlayersService {
     return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.headers });
   }
 
-  exportCsv(name = '', club = '', position = '', gender = 'M') {
+  exportCsv(name = '', club = '', position = '', gender = 'M', nationality = '') {
     const params = new URLSearchParams();
     if (name) params.set('name', name);
     if (club) params.set('club', club);
     if (position) params.set('position', position);
+    if (nationality) params.set('nationality', nationality);
     params.set('gender', gender);
     return this.http.get(`${this.apiUrl}/export/csv?${params}`, {
       headers: this.headers,

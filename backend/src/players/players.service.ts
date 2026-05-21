@@ -36,6 +36,7 @@ export class PlayersService {
     club?: string,
     position?: string,
     gender?: string,
+    nationality?: string,
   ) {
     const offset = (page - 1) * limit;
     const where: any = {};
@@ -53,6 +54,10 @@ export class PlayersService {
 
     if (position && position.trim() !== '') {
       where.player_positions = { [Op.like]: `%${position}%` };
+    }
+
+    if (nationality && nationality.trim() !== '') {
+      where.nationality_name = { [Op.like]: `%${nationality}%` };
     }
 
     where.gender = gender === 'F' ? 'F' : { [Op.or]: ['M', null] };
@@ -90,7 +95,7 @@ export class PlayersService {
     };
   }
 
-  async exportCsv(name?: string, club?: string, position?: string, gender?: string) {
+  async exportCsv(name?: string, club?: string, position?: string, gender?: string, nationality?: string) {
     const where: any = {};
 
     if (name && name.trim() !== '') {
@@ -108,6 +113,12 @@ export class PlayersService {
     if (position && position.trim() !== '') {
       where.player_positions = {
         [Op.like]: `%${position}%`,
+      };
+    }
+
+    if (nationality && nationality.trim() !== '') {
+      where.nationality_name = {
+        [Op.like]: `%${nationality}%`,
       };
     }
 
@@ -200,6 +211,7 @@ Escribe solo el párrafo, sin títulos ni listas.`;
             fifa_version: Number(data.fifa_version),
             fifa_update: Number(data.fifa_update) || 0,
             gender: data.gender || gender,
+            player_face_url: data.player_face_url || '',
           });
         })
         .on('end', resolve)

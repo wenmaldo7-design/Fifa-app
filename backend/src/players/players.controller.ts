@@ -69,6 +69,7 @@ export class PlayersController {
   @ApiQuery({ name: 'name', required: false })
   @ApiQuery({ name: 'club', required: false })
   @ApiQuery({ name: 'position', required: false })
+  @ApiQuery({ name: 'nationality', required: false })
   @ApiQuery({ name: 'gender', required: false, example: 'M' })
   @Get()
   findAll(
@@ -77,25 +78,28 @@ export class PlayersController {
     @Query('name') name?: string,
     @Query('club') club?: string,
     @Query('position') position?: string,
+    @Query('nationality') nationality?: string,
     @Query('gender') gender?: string,
   ) {
-    return this.playersService.findAll(+page, +limit, name, club, position, gender);
+    return this.playersService.findAll(+page, +limit, name, club, position, gender, nationality);
   }
 
   @ApiOperation({ summary: 'Exportar jugadores filtrados a CSV' })
   @ApiQuery({ name: 'name', required: false })
   @ApiQuery({ name: 'club', required: false })
   @ApiQuery({ name: 'position', required: false })
+  @ApiQuery({ name: 'nationality', required: false })
   @ApiQuery({ name: 'gender', required: false, example: 'M' })
   @Get('export/csv')
   async exportCsv(
     @Query('name') name?: string,
     @Query('club') club?: string,
     @Query('position') position?: string,
+    @Query('nationality') nationality?: string,
     @Query('gender') gender?: string,
     @Res() res?,
   ) {
-    const csv = await this.playersService.exportCsv(name, club, position, gender);
+    const csv = await this.playersService.exportCsv(name, club, position, gender, nationality);
     res.header('Content-Type', 'text/csv');
     res.attachment('players.csv');
     return res.send(csv);

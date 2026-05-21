@@ -48,4 +48,7 @@ export class Player extends Model {
 
   @Column({ type: DataType.STRING, defaultValue: 'M' })
   declare gender: string;
+
+  @Column(DataType.STRING)
+  declare player_face_url: string;
 }

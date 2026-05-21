@@ -38,6 +38,7 @@ export class App implements OnInit {
   name = '';
   club = '';
   position = '';
+  nationality = '';
   gender = 'M';
   page = 1;
   limit = 20;
@@ -107,7 +108,7 @@ export class App implements OnInit {
 
   loadPlayers() {
     this.loading.set(true);
-    this.playersService.getPlayers(this.page, this.limit, this.name, this.club, this.position, this.gender)
+    this.playersService.getPlayers(this.page, this.limit, this.name, this.club, this.position, this.gender, this.nationality)
       .subscribe({
         next: (response: any) => {
           this.players.set(response.rows || []);
@@ -293,7 +294,7 @@ export class App implements OnInit {
     if (this.downloadingCsv()) return;
     this.downloadingCsv.set(true);
 
-    this.playersService.exportCsv(this.name, this.club, this.position, this.gender).subscribe({
+    this.playersService.exportCsv(this.name, this.club, this.position, this.gender, this.nationality).subscribe({
       next: (blob: Blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
