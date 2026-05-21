@@ -11,7 +11,7 @@ Permite explorar, gestionar y analizar jugadores de FIFA (masculinos y femeninos
 - Listado paginado con fotos, posición y overall
 - Toggle **Masculino / Femenino** para cambiar el dataset
 - Filtros por nombre, club, posición y nacionalidad
-- Ver detalle completo al hacer clic en un jugador
+- Ver detalle completo al hacer click en un jugador
 - Crear, editar y eliminar jugadores
 - Importar jugadores desde CSV (con deduplicación automática por versión FIFA)
 - Exportar listado filtrado a CSV
