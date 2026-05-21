@@ -1,5 +1,4 @@
 import { Component, OnInit, inject, signal, HostListener } from '@angular/core';
-import { Subject, switchMap } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -26,19 +25,20 @@ Chart.register(RadarController, RadialLinearScale, PointElement, LineElement, Fi
 })
 export class App implements OnInit {
   private playersService = inject(PlayersService);
-  private trigger$ = new Subject<void>();
 
-  players: any[] = [];
-  total = 0;
-  loading = false;
+  players = signal<any[]>([]);
+  total = signal(0);
+  loading = signal(false);
   selectedPlayer: any = null;
   chart: any;
   isLoggedIn = false;
+  darkMode = false;
   editingPlayer = false;
   editError = '';
   name = '';
   club = '';
   position = '';
+  gender = 'M';
   page = 1;
   limit = 20;
   activeTab = 'info';
@@ -48,17 +48,17 @@ export class App implements OnInit {
   analysis = signal('');
   loadingAnalysis = signal(false);
   analysisError = signal('');
-  downloadingCsv = false;
+  downloadingCsv = signal(false);
   showCreateForm = false;
   createError = '';
   newPlayer = {
     short_name: '', club_name: '', nationality_name: '',
     player_positions: '', overall: 80, pace: 70, shooting: 70,
-    passing: 70, dribbling: 70, defending: 50, physic: 70, fifa_version: 23,
+    passing: 70, dribbling: 70, defending: 50, physic: 70, fifa_version: 23, gender: 'M',
   };
 
   get totalPages() {
-    return Math.ceil(this.total / this.limit) || 0;
+    return Math.ceil(this.total() / this.limit) || 0;
   }
 
   get pageRange(): number[] {
@@ -70,24 +70,22 @@ export class App implements OnInit {
   }
 
   ngOnInit() {
-    this.trigger$
-      .pipe(switchMap(() => this.playersService.getPlayers(this.page, this.limit, this.name, this.club, this.position)))
-      .subscribe({
-        next: (response: any) => {
-          this.players = response.rows || [];
-          this.total = response.count || 0;
-          this.loading = false;
-        },
-        error: (err: any) => {
-          console.error(err);
-          this.loading = false;
-        },
-      });
-
-    if (typeof window !== 'undefined' && localStorage.getItem('token')) {
-      this.isLoggedIn = true;
-      this.loadPlayers();
+    if (typeof window !== 'undefined') {
+      if (localStorage.getItem('token')) {
+        this.isLoggedIn = true;
+        this.loadPlayers();
+      }
+      if (localStorage.getItem('darkMode') === 'true') {
+        this.darkMode = true;
+        document.body.classList.add('dark');
+      }
     }
+  }
+
+  toggleDarkMode() {
+    this.darkMode = !this.darkMode;
+    document.body.classList.toggle('dark', this.darkMode);
+    localStorage.setItem('darkMode', String(this.darkMode));
   }
 
   onLogin() {
@@ -98,7 +96,7 @@ export class App implements OnInit {
   logout() {
     localStorage.removeItem('token');
     this.isLoggedIn = false;
-    this.players = [];
+    this.players.set([]);
     this.selectedPlayer = null;
   }
 
@@ -108,8 +106,19 @@ export class App implements OnInit {
   }
 
   loadPlayers() {
-    this.loading = true;
-    this.trigger$.next();
+    this.loading.set(true);
+    this.playersService.getPlayers(this.page, this.limit, this.name, this.club, this.position, this.gender)
+      .subscribe({
+        next: (response: any) => {
+          this.players.set(response.rows || []);
+          this.total.set(response.count || 0);
+          this.loading.set(false);
+        },
+        error: (err: any) => {
+          console.error(err);
+          this.loading.set(false);
+        },
+      });
   }
 
   goTo(p: number) {
@@ -135,9 +144,16 @@ export class App implements OnInit {
     }
   }
 
+  setGender(g: string) {
+    if (this.gender === g) return;
+    this.gender = g;
+    this.page = 1;
+    this.loadPlayers();
+  }
+
   loadTimeline(name: string) {
     this.loadingTimeline = true;
-    this.playersService.getTimeline(name).subscribe({
+    this.playersService.getTimeline(name, this.gender).subscribe({
       next: (data: any) => {
         this.timeline = data;
         this.loadingTimeline = false;
@@ -166,7 +182,7 @@ export class App implements OnInit {
       overall: p.overall,
     }));
 
-    this.playersService.analyzeTimeline(history).subscribe({
+    this.playersService.analyzeTimeline(history, this.gender).subscribe({
       next: (data: any) => {
         this.analysis.set(data.analysis);
         this.loadingAnalysis.set(false);
@@ -198,7 +214,7 @@ export class App implements OnInit {
     this.newPlayer = {
       short_name: '', club_name: '', nationality_name: '',
       player_positions: '', overall: 80, pace: 70, shooting: 70,
-      passing: 70, dribbling: 70, defending: 50, physic: 70, fifa_version: 23,
+      passing: 70, dribbling: 70, defending: 50, physic: 70, fifa_version: 23, gender: 'M',
     };
     this.createError = '';
     this.showCreateForm = true;
@@ -274,10 +290,10 @@ export class App implements OnInit {
   }
 
   downloadCsv() {
-    if (this.downloadingCsv) return;
-    this.downloadingCsv = true;
+    if (this.downloadingCsv()) return;
+    this.downloadingCsv.set(true);
 
-    this.playersService.exportCsv(this.name, this.club, this.position).subscribe({
+    this.playersService.exportCsv(this.name, this.club, this.position, this.gender).subscribe({
       next: (blob: Blob) => {
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -285,11 +301,11 @@ export class App implements OnInit {
         a.download = 'players.csv';
         a.click();
         URL.revokeObjectURL(url);
-        this.downloadingCsv = false;
+        this.downloadingCsv.set(false);
       },
       error: (err: any) => {
         console.error('Error descargando CSV', err);
-        this.downloadingCsv = false;
+        this.downloadingCsv.set(false);
       },
     });
   }
@@ -333,6 +349,9 @@ export class App implements OnInit {
       return '#ef4444';
     });
 
+    const labelColor = this.darkMode ? '#94a3b8' : '#1e1b4b';
+    const gridColor  = this.darkMode ? 'rgba(148, 163, 184, 0.15)' : 'rgba(100, 116, 139, 0.2)';
+
     this.chart = new Chart(canvas, {
       type: 'radar',
       data: {
@@ -356,10 +375,10 @@ export class App implements OnInit {
             min: 0,
             max: 100,
             ticks: { display: false },
-            grid: { color: 'rgba(100, 116, 139, 0.2)' },
-            angleLines: { color: 'rgba(100, 116, 139, 0.2)' },
+            grid: { color: gridColor },
+            angleLines: { color: gridColor },
             pointLabels: {
-              color: '#1e1b4b',
+              color: labelColor,
               font: { size: 12, weight: 'bold' },
             },
           },

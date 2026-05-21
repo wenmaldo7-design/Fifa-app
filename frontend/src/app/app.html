@@ -4,24 +4,37 @@
 
   <header class="app-header">
     <div class="header-brand">
-      <span class="header-icon">⚽</span>
+      <i class="bi bi-trophy-fill header-icon"></i>
       <span class="header-title">FIFA Players</span>
     </div>
-    <button class="btn-logout" (click)="logout()">Cerrar sesión</button>
+    <div class="header-actions">
+      <button class="btn-logout" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button>
+      <button class="btn-darkmode" (click)="toggleDarkMode()" [title]="darkMode ? 'Modo claro' : 'Modo oscuro'">
+        <i [class]="darkMode ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
+      </button>
+    </div>
   </header>
 
   <div class="container">
 
     <div class="filters-card">
-      <div class="filters">
-        <input type="text" placeholder="🔍 Jugador" [(ngModel)]="name" (keyup.enter)="search()" />
-        <input type="text" placeholder="🏟️ Club" [(ngModel)]="club" (keyup.enter)="search()" />
-        <input type="text" placeholder="🎽 Posición" [(ngModel)]="position" (keyup.enter)="search()" />
-        <button class="btn-primary" (click)="search()">Buscar</button>
-        <button class="btn-secondary" (click)="downloadCsv()" [disabled]="downloadingCsv">
-          {{ downloadingCsv ? 'Descargando...' : '⬇ CSV' }}
+      <div class="gender-toggle">
+        <button [class.active]="gender === 'M'" (click)="setGender('M')">
+          <i class="bi bi-gender-male"></i> Masculino
         </button>
-        <button class="btn-create" (click)="openCreateForm()">+ Nuevo jugador</button>
+        <button [class.active]="gender === 'F'" (click)="setGender('F')">
+          <i class="bi bi-gender-female"></i> Femenino
+        </button>
+      </div>
+      <div class="filters">
+        <input type="text" placeholder="Jugador" [(ngModel)]="name" (keyup.enter)="search()" />
+        <input type="text" placeholder="Club" [(ngModel)]="club" (keyup.enter)="search()" />
+        <input type="text" placeholder="Posición" [(ngModel)]="position" (keyup.enter)="search()" />
+        <button class="btn-primary" (click)="search()"><i class="bi bi-search"></i> Buscar</button>
+        <button class="btn-secondary" (click)="downloadCsv()" [disabled]="downloadingCsv()">
+          <i class="bi bi-download"></i> {{ downloadingCsv() ? 'Descargando...' : 'CSV' }}
+        </button>
+        <button class="btn-create" (click)="openCreateForm()"><i class="bi bi-person-plus-fill"></i> Nuevo jugador</button>
       </div>
     </div>
 
@@ -33,14 +46,14 @@
       <span *ngIf="pageRange[pageRange.length - 1] < totalPages" class="page-dots">…</span>
       <button class="btn-page" [disabled]="page === totalPages" (click)="goTo(page + 1)">›</button>
       <button class="btn-page" [disabled]="page === totalPages" (click)="goTo(totalPages)">»</button>
-      <span class="page-info">{{ total }} jugadores · {{ totalPages }} páginas</span>
+      <span class="page-info">{{ total() }} jugadores · {{ totalPages }} páginas</span>
     </div>
 
-    <p *ngIf="players.length === 0 && !loading" class="empty-state">
+    <p *ngIf="players().length === 0 && !loading()" class="empty-state">
       No se encontraron jugadores.
     </p>
 
-    <div class="table-wrapper" *ngIf="players.length > 0">
+    <div class="table-wrapper" *ngIf="players().length > 0">
       <table>
         <thead>
           <tr>
@@ -52,9 +65,9 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let player of players" (click)="showPlayer(player)">
+          <tr *ngFor="let player of players()" (click)="showPlayer(player)">
             <td class="player-name">{{ player.short_name }}</td>
-            <td>{{ player.club_name }}</td>
+            <td>{{ player.club_name || 'Sin club' }}</td>
             <td>{{ player.nationality_name }}</td>
             <td>
               <span class="pos-badge" [ngClass]="positionClass(player.player_positions)">
@@ -92,13 +105,13 @@
           <span class="overall-badge lg" [ngClass]="overallClass(selectedPlayer.overall)">
             {{ selectedPlayer.overall }}
           </span>
-          <button class="btn-close" (click)="closeModal()">✕</button>
+          <button class="btn-close" (click)="closeModal()"><i class="bi bi-x-lg"></i></button>
         </div>
 
         <div class="modal-tabs">
-          <button [class.active]="activeTab === 'info'" (click)="setTab('info')">Info</button>
-          <button [class.active]="activeTab === 'skills'" (click)="setTab('skills')">Skills</button>
-          <button [class.active]="activeTab === 'evolucion'" (click)="setTab('evolucion')">📈 Evolución</button>
+          <button [class.active]="activeTab === 'info'" (click)="setTab('info')"><i class="bi bi-person-lines-fill"></i> Info</button>
+          <button [class.active]="activeTab === 'skills'" (click)="setTab('skills')"><i class="bi bi-lightning-charge-fill"></i> Skills</button>
+          <button [class.active]="activeTab === 'evolucion'" (click)="setTab('evolucion')"><i class="bi bi-graph-up-arrow"></i> Evolución</button>
         </div>
 
         <!-- Tab Info -->
@@ -106,7 +119,7 @@
           <p *ngIf="editError" class="error-message">{{ editError }}</p>
 
           <div class="modal-info" *ngIf="!editingPlayer">
-            <div class="info-row"><span class="info-label">Club</span><span>{{ selectedPlayer.club_name }}</span></div>
+            <div class="info-row"><span class="info-label">Club</span><span>{{ selectedPlayer.club_name || 'Sin club' }}</span></div>
             <div class="info-row"><span class="info-label">Nacionalidad</span><span>{{ selectedPlayer.nationality_name }}</span></div>
             <div class="info-row">
               <span class="info-label">Posición</span>
@@ -122,9 +135,9 @@
           </div>
 
           <div class="modal-buttons">
-            <button class="btn-edit" *ngIf="!editingPlayer" (click)="enableEdit()">✏️ Editar</button>
-            <button class="btn-save" *ngIf="editingPlayer" (click)="savePlayer()">💾 Guardar</button>
-            <button class="btn-delete" (click)="deletePlayer()">🗑️ Eliminar</button>
+            <button class="btn-edit" *ngIf="!editingPlayer" (click)="enableEdit()"><i class="bi bi-pencil"></i> Editar</button>
+            <button class="btn-save" *ngIf="editingPlayer" (click)="savePlayer()"><i class="bi bi-floppy"></i> Guardar</button>
+            <button class="btn-delete" (click)="deletePlayer()"><i class="bi bi-trash3"></i> Eliminar</button>
           </div>
         </div>
 
@@ -191,7 +204,7 @@
                 <tbody>
                   <tr *ngFor="let v of timeline">
                     <td><span class="version-badge">FIFA {{ v.fifa_version }}</span></td>
-                    <td>{{ v.club_name }}</td>
+                    <td>{{ v.club_name || 'Sin club' }}</td>
                     <td><span class="tl-overall-val" [ngClass]="overallClass(v.overall)">{{ v.overall }}</span></td>
                   </tr>
                 </tbody>
@@ -200,11 +213,12 @@
 
             <div class="analyze-section">
               <button class="btn-analyze" (click)="analyze()" [disabled]="loadingAnalysis()">
-                {{ loadingAnalysis() ? '⏳ Analizando...' : '🤖 Analizar evolución con IA' }}
+                <i [class]="loadingAnalysis() ? 'bi bi-hourglass-split' : 'bi bi-cpu'"></i>
+                {{ loadingAnalysis() ? 'Analizando...' : 'Analizar evolución con IA' }}
               </button>
               <div *ngIf="analysisError()" class="tl-error">{{ analysisError() }}</div>
               <div *ngIf="analysis()" class="analysis-result">
-                <div class="analysis-header"><span>🤖</span><strong>Análisis con IA</strong></div>
+                <div class="analysis-header"><i class="bi bi-cpu"></i><strong>Análisis con IA</strong></div>
                 <p>{{ analysis() }}</p>
               </div>
             </div>
@@ -226,7 +240,7 @@
 
         <div class="modal-header">
           <h2>Nuevo jugador</h2>
-          <button class="btn-close" (click)="closeCreateForm()">✕</button>
+          <button class="btn-close" (click)="closeCreateForm()"><i class="bi bi-x-lg"></i></button>
         </div>
 
         <p *ngIf="createError" class="error-message">{{ createError }}</p>
@@ -237,6 +251,10 @@
           <input [(ngModel)]="newPlayer.nationality_name" placeholder="Nacionalidad" />
           <input [(ngModel)]="newPlayer.player_positions" placeholder="Posición (ej: ST, CF)" />
           <input type="number" [(ngModel)]="newPlayer.fifa_version" placeholder="Versión FIFA (ej: 23)" />
+          <select [(ngModel)]="newPlayer.gender">
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+          </select>
         </div>
 
         <h4 class="stats-title">Overall y habilidades</h4>
@@ -251,7 +269,7 @@
         </div>
 
         <div class="modal-buttons">
-          <button class="btn-save" (click)="createPlayer()">Crear jugador</button>
+          <button class="btn-save" (click)="createPlayer()"><i class="bi bi-person-check"></i> Crear jugador</button>
           <button class="btn-secondary" (click)="closeCreateForm()">Cancelar</button>
         </div>
 

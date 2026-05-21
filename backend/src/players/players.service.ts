@@ -35,6 +35,7 @@ export class PlayersService {
     name?: string,
     club?: string,
     position?: string,
+    gender?: string,
   ) {
     const offset = (page - 1) * limit;
     const where: any = {};
@@ -47,12 +48,14 @@ export class PlayersService {
     }
 
     if (club && club.trim() !== '') {
-      where.club_name = { [Op.like]: `%${club}%` }; // cambio aquí
+      where.club_name = { [Op.like]: `%${club}%` };
     }
 
     if (position && position.trim() !== '') {
-      where.player_positions = { [Op.like]: `%${position}%` }; // cambio aquí
+      where.player_positions = { [Op.like]: `%${position}%` };
     }
+
+    where.gender = gender === 'F' ? 'F' : { [Op.or]: ['M', null] };
 
     return this.playerModel.findAndCountAll({
       where,
@@ -87,7 +90,7 @@ export class PlayersService {
     };
   }
 
-  async exportCsv(name?: string, club?: string, position?: string) {
+  async exportCsv(name?: string, club?: string, position?: string, gender?: string) {
     const where: any = {};
 
     if (name && name.trim() !== '') {
@@ -108,6 +111,8 @@ export class PlayersService {
       };
     }
 
+    where.gender = gender === 'F' ? 'F' : { [Op.or]: ['M', null] };
+
     const players = await this.playerModel.findAll({
       where,
       attributes: ['short_name', 'club_name', 'nationality_name', 'player_positions', 'overall', 'pace', 'shooting', 'passing', 'dribbling', 'defending', 'physic', 'fifa_version'],
@@ -118,24 +123,29 @@ export class PlayersService {
 
     return json2csv.parse(players);
   }
-  async getTimeline(name: string) {
+  async getTimeline(name: string, gender?: string) {
     return this.playerModel.findAll({
       where: {
         short_name: { [Op.like]: `%${name}%` },
+        gender: gender === 'F' ? 'F' : { [Op.or]: ['M', null] },
       },
-      order: [['fifa_version', 'ASC']], // ordena de 2015 a 2023
+      order: [['fifa_version', 'ASC']],
     });
   }
 
   async analyzeTimeline(
     history: SkillEntryDto[],
+    gender = 'M',
   ): Promise<{ analysis: string }> {
     const lines = history.map(
       (h) =>
         `FIFA ${h.fifa_version}: overall=${h.overall}, pace=${h.pace}, shooting=${h.shooting}, passing=${h.passing}, dribbling=${h.dribbling}, defending=${h.defending}, physic=${h.physic}`,
     );
 
-    const prompt = `Eres un experto en análisis de jugadores de FIFA. Analiza la evolución de habilidades de un jugador a lo largo de los años y escribe un único párrafo narrativo en español. Destaca mejoras, declives y tendencias importantes. Sé concreto con los números.
+    const isFemale = gender === 'F';
+
+    const prompt = `Eres un experto en análisis de FIFA. Escribe un párrafo narrativo en español sobre la evolución de esta ${isFemale ? 'JUGADORA (género femenino)' : 'jugador (género masculino)'}.
+${isFemale ? 'IMPORTANTE: es una mujer. Usa SIEMPRE género femenino: "la jugadora", "ella", "estuvo", "fue considerada", etc. NUNCA uses "el jugador" ni género masculino.' : ''}
 
 Historial:
 ${lines.join('\n')}
@@ -168,7 +178,7 @@ Escribe solo el párrafo, sin títulos ni listas.`;
     return { analysis: data.choices[0].message.content.trim() };
   }
 
-  async importCsv(file: Express.Multer.File) {
+  async importCsv(file: Express.Multer.File, gender = 'M') {
     const results: any[] = [];
 
     await new Promise<void>((resolve, reject) => {
@@ -188,14 +198,27 @@ Escribe solo el párrafo, sin títulos ni listas.`;
             defending: Number(data.defending),
             physic: Number(data.physic),
             fifa_version: Number(data.fifa_version),
+            fifa_update: Number(data.fifa_update) || 0,
+            gender: data.gender || gender,
           });
         })
         .on('end', resolve)
         .on('error', reject);
     });
 
-    await this.playerModel.bulkCreate(results);
+    // Keep only the latest update per player per FIFA version
+    const dedupMap = new Map<string, any>();
+    for (const row of results) {
+      const key = `${row.short_name}__${row.fifa_version}`;
+      const existing = dedupMap.get(key);
+      if (!existing || row.fifa_update > existing.fifa_update) {
+        dedupMap.set(key, row);
+      }
+    }
+    const deduped = Array.from(dedupMap.values());
 
-    return { message: `${results.length} jugadores importados correctamente` };
+    await this.playerModel.bulkCreate(deduped);
+
+    return { message: `${deduped.length} jugadores importados correctamente` };
   }
 }

@@ -12,8 +12,8 @@ export class PlayersService {
     return new HttpHeaders({ Authorization: `Bearer ${token}` });
   }
 
-  getPlayers(page = 1, limit = 20, name = '', club = '', position = '') {
-    const params = `page=${page}&limit=${limit}&name=${name}&club=${club}&position=${position}&t=${Date.now()}`;
+  getPlayers(page = 1, limit = 20, name = '', club = '', position = '', gender = 'M') {
+    const params = `page=${page}&limit=${limit}&name=${name}&club=${club}&position=${position}&gender=${gender}&t=${Date.now()}`;
     return this.http.get(`${this.apiUrl}?${params}`, { headers: this.headers });
   }
 
@@ -33,24 +33,25 @@ export class PlayersService {
     return this.http.delete(`${this.apiUrl}/${id}`, { headers: this.headers });
   }
 
-  exportCsv(name = '', club = '', position = '') {
+  exportCsv(name = '', club = '', position = '', gender = 'M') {
     const params = new URLSearchParams();
     if (name) params.set('name', name);
     if (club) params.set('club', club);
     if (position) params.set('position', position);
+    params.set('gender', gender);
     return this.http.get(`${this.apiUrl}/export/csv?${params}`, {
       headers: this.headers,
       responseType: 'blob',
     });
   }
 
-  getTimeline(name: string) {
-    return this.http.get(`${this.apiUrl}/timeline/search?name=${name}&t=${Date.now()}`, {
+  getTimeline(name: string, gender = 'M') {
+    return this.http.get(`${this.apiUrl}/timeline/search?name=${name}&gender=${gender}&t=${Date.now()}`, {
       headers: this.headers,
     });
   }
 
-  analyzeTimeline(history: object[]) {
-    return this.http.post(`${this.apiUrl}/timeline/analyze`, { history }, { headers: this.headers });
+  analyzeTimeline(history: object[], gender = 'M') {
+    return this.http.post(`${this.apiUrl}/timeline/analyze`, { history, gender }, { headers: this.headers });
   }
 }

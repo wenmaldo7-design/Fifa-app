@@ -51,10 +51,14 @@ export class PlayersController {
       },
     },
   })
+  @ApiQuery({ name: 'gender', required: false, example: 'M' })
   @Post('import/csv')
   @UseInterceptors(FileInterceptor('file'))
-  async importCsv(@UploadedFile() file: Express.Multer.File) {
-    return this.playersService.importCsv(file);
+  async importCsv(
+    @UploadedFile() file: Express.Multer.File,
+    @Query('gender') gender = 'M',
+  ) {
+    return this.playersService.importCsv(file, gender);
   }
 
   @ApiOperation({
@@ -65,6 +69,7 @@ export class PlayersController {
   @ApiQuery({ name: 'name', required: false })
   @ApiQuery({ name: 'club', required: false })
   @ApiQuery({ name: 'position', required: false })
+  @ApiQuery({ name: 'gender', required: false, example: 'M' })
   @Get()
   findAll(
     @Query('page') page = 1,
@@ -72,22 +77,25 @@ export class PlayersController {
     @Query('name') name?: string,
     @Query('club') club?: string,
     @Query('position') position?: string,
+    @Query('gender') gender?: string,
   ) {
-    return this.playersService.findAll(+page, +limit, name, club, position);
+    return this.playersService.findAll(+page, +limit, name, club, position, gender);
   }
 
   @ApiOperation({ summary: 'Exportar jugadores filtrados a CSV' })
   @ApiQuery({ name: 'name', required: false })
   @ApiQuery({ name: 'club', required: false })
   @ApiQuery({ name: 'position', required: false })
+  @ApiQuery({ name: 'gender', required: false, example: 'M' })
   @Get('export/csv')
   async exportCsv(
     @Query('name') name?: string,
     @Query('club') club?: string,
     @Query('position') position?: string,
+    @Query('gender') gender?: string,
     @Res() res?,
   ) {
-    const csv = await this.playersService.exportCsv(name, club, position);
+    const csv = await this.playersService.exportCsv(name, club, position, gender);
     res.header('Content-Type', 'text/csv');
     res.attachment('players.csv');
     return res.send(csv);
@@ -97,9 +105,10 @@ export class PlayersController {
     summary: 'Obtener evolución de skills por año para un jugador',
   })
   @ApiQuery({ name: 'name', required: true, example: 'Messi' })
+  @ApiQuery({ name: 'gender', required: false, example: 'M' })
   @Get('timeline/search')
-  getTimeline(@Query('name') name: string) {
-    return this.playersService.getTimeline(name);
+  getTimeline(@Query('name') name: string, @Query('gender') gender?: string) {
+    return this.playersService.getTimeline(name, gender);
   }
 
   @ApiOperation({
@@ -107,7 +116,7 @@ export class PlayersController {
   })
   @Post('timeline/analyze')
   analyzeTimeline(@Body() body: AnalyzeTimelineDto) {
-    return this.playersService.analyzeTimeline(body.history);
+    return this.playersService.analyzeTimeline(body.history, body.gender);
   }
 
   @ApiOperation({ summary: 'Obtener un jugador por ID' })

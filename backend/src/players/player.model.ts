@@ -45,4 +45,7 @@ export class Player extends Model {
 
   @Column(DataType.INTEGER)
   declare fifa_version: number;
+
+  @Column({ type: DataType.STRING, defaultValue: 'M' })
+  declare gender: string;
 }

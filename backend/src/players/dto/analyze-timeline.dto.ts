@@ -14,4 +14,7 @@ export class SkillEntryDto {
 export class AnalyzeTimelineDto {
   @ApiProperty({ type: [SkillEntryDto] })
   history: SkillEntryDto[];
+
+  @ApiProperty({ example: 'M', required: false })
+  gender?: string;
 }

@@ -49,4 +49,8 @@ export class CreatePlayerDto {
   @ApiProperty({ example: 23, description: 'Versión de FIFA (ej: 23)' })
   @IsNumber()
   fifa_version: number;
+
+  @ApiProperty({ example: 'M', description: 'Género del jugador: M o F', required: false })
+  @IsString()
+  gender?: string;
 }

@@ -1,1 +1,93 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* ── Dark mode ── */
+body.dark {
+  background: #0f172a;
+  color: #e2e8f0;
+
+  .filters-card { background: #1e293b; box-shadow: none; }
+
+  input, select {
+    background: #0f172a !important;
+    color: #e2e8f0 !important;
+    border-color: #334155 !important;
+    &::placeholder { color: #64748b !important; }
+    &:focus { background: #0f172a !important; color: #e2e8f0 !important; }
+    &:-webkit-autofill,
+    &:-webkit-autofill:focus {
+      -webkit-box-shadow: 0 0 0 1000px #0f172a inset !important;
+      -webkit-text-fill-color: #e2e8f0 !important;
+    }
+  }
+
+  .table-wrapper {
+    background: #1e293b;
+    table { background: #1e293b; }
+    thead { background: #0f172a; th { color: #94a3b8; border-color: #334155; } }
+    tbody tr {
+      background: #1e293b;
+      border-color: #334155;
+      &:nth-child(even) { background: #1e293b; }
+      &:hover { background: #28374d !important; }
+      td { color: #e2e8f0; border-color: #334155; }
+    }
+  }
+
+  .modal-backdrop { background: rgba(0,0,0,0.7); }
+  .modal-box { background: #1e293b; box-shadow: 0 24px 64px rgba(0,0,0,0.6); }
+  .modal-header { border-color: #334155; h2 { color: #e2e8f0; } }
+  .modal-tabs {
+    border-color: #334155;
+    button { color: #94a3b8; &:hover { background: #334155; } &.active { color: #6366f1; border-color: #6366f1; } }
+  }
+  .modal-info { background: #0f172a; }
+  .info-row { border-color: #334155; color: #e2e8f0; .info-label { color: #94a3b8; } }
+  .modal-edit input, .modal-edit select { background: #0f172a; color: #e2e8f0; border-color: #334155; }
+
+  .tl-table-wrapper {
+    background: #1e293b !important;
+    table { background: #1e293b !important; }
+    thead { background: #0f172a !important; th { color: #94a3b8 !important; border-color: #334155 !important; } }
+    tbody tr {
+      background: #1e293b !important;
+      border-color: #334155 !important;
+      &:nth-child(even) { background: #1e293b !important; }
+      &:hover { background: #28374d !important; }
+      td { color: #e2e8f0 !important; border-color: #334155 !important; }
+    }
+  }
+  .tl-loading { color: #94a3b8; }
+  .tl-versions-count { color: #94a3b8; }
+
+  .analysis-result { background: #0f172a !important; border-color: #334155 !important; p { color: #e2e8f0 !important; } }
+  .analysis-header strong { color: #a5b4fc; }
+
+  .chart-legend { background: #0f172a; .legend-item { color: #94a3b8; } }
+
+  .empty-state { background: #1e293b; color: #94a3b8; box-shadow: none; }
+
+  .page-info { color: #94a3b8; }
+  .page-dots { color: #64748b; }
+  .btn-page { background: #1e293b; color: #94a3b8; border-color: #334155;
+    &:hover:not(:disabled) { background: #334155; }
+    &.active { background: #6366f1; color: white; border-color: #6366f1; }
+  }
+
+  .stats-title { color: #94a3b8; }
+  .stat-label { color: #94a3b8; }
+  .stat-value { color: #e2e8f0; }
+  .stat-bar { background: #334155; }
+
+  .create-stats-grid label { color: #94a3b8; }
+
+  .gender-toggle {
+    border-color: #334155;
+    button {
+      background: #1e293b;
+      color: #94a3b8;
+      &:first-child { border-color: #334155; }
+      &:hover:not(.active) { background: #334155; }
+      &.active { background: #6366f1; color: white; }
+    }
+  }
+}
