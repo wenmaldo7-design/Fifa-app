@@ -147,10 +147,21 @@
           </div>
 
           <div class="modal-edit" *ngIf="editingPlayer">
+            <input [(ngModel)]="selectedPlayer.short_name" placeholder="Nombre" />
             <input [(ngModel)]="selectedPlayer.club_name" placeholder="Club" />
             <input [(ngModel)]="selectedPlayer.nationality_name" placeholder="Nacionalidad" />
             <input [(ngModel)]="selectedPlayer.player_positions" placeholder="Posición" />
-            <input type="number" [(ngModel)]="selectedPlayer.overall" placeholder="Overall" />
+            <input type="number" [(ngModel)]="selectedPlayer.overall" placeholder="Overall" min="1" max="100" />
+          </div>
+
+          <h4 class="stats-title" *ngIf="editingPlayer">Skills</h4>
+          <div class="create-stats-grid" *ngIf="editingPlayer">
+            <label>Pace<input type="number" [(ngModel)]="selectedPlayer.pace" min="0" max="100" /></label>
+            <label>Shooting<input type="number" [(ngModel)]="selectedPlayer.shooting" min="0" max="100" /></label>
+            <label>Passing<input type="number" [(ngModel)]="selectedPlayer.passing" min="0" max="100" /></label>
+            <label>Dribbling<input type="number" [(ngModel)]="selectedPlayer.dribbling" min="0" max="100" /></label>
+            <label>Defending<input type="number" [(ngModel)]="selectedPlayer.defending" min="0" max="100" /></label>
+            <label>Physic<input type="number" [(ngModel)]="selectedPlayer.physic" min="0" max="100" /></label>
           </div>
 
           <div class="modal-buttons">
@@ -211,6 +222,21 @@
 
           <div *ngIf="!loadingTimeline && timeline.length > 0">
             <div class="tl-versions-count">{{ timeline.length }} versiones encontradas</div>
+
+            <div class="skill-selector">
+              <label>Evolución de</label>
+              <select [(ngModel)]="selectedSkill" (change)="updateTimelineChart()">
+                <option value="overall">Overall</option>
+                <option value="pace">Pace</option>
+                <option value="shooting">Shooting</option>
+                <option value="passing">Passing</option>
+                <option value="dribbling">Dribbling</option>
+                <option value="defending">Defending</option>
+                <option value="physic">Physic</option>
+              </select>
+            </div>
+            <canvas id="timelineChart" height="180"></canvas>
+
             <div class="tl-table-wrapper">
               <table>
                 <thead>

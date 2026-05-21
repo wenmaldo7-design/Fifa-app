@@ -5,6 +5,9 @@ import {
   Chart,
   RadarController,
   RadialLinearScale,
+  LineController,
+  CategoryScale,
+  LinearScale,
   PointElement,
   LineElement,
   Filler,
@@ -14,7 +17,7 @@ import {
 import { PlayersService } from './services/players';
 import { Login } from './login/login';
 
-Chart.register(RadarController, RadialLinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
+Chart.register(RadarController, RadialLinearScale, LineController, CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip, Legend);
 
 @Component({
   selector: 'app-root',
@@ -49,6 +52,8 @@ export class App implements OnInit {
   analysis = signal('');
   loadingAnalysis = signal(false);
   analysisError = signal('');
+  selectedSkill = 'overall';
+  timelineChart: any;
   downloadingCsv = signal(false);
   showCreateForm = false;
   createError = '';
@@ -143,6 +148,9 @@ export class App implements OnInit {
     if (tab === 'skills') {
       requestAnimationFrame(() => requestAnimationFrame(() => this.createChart()));
     }
+    if (tab === 'evolucion' && this.timeline.length > 0) {
+      requestAnimationFrame(() => requestAnimationFrame(() => this.createTimelineChart()));
+    }
   }
 
   setGender(g: string) {
@@ -158,6 +166,9 @@ export class App implements OnInit {
       next: (data: any) => {
         this.timeline = data;
         this.loadingTimeline = false;
+        if (this.activeTab === 'evolucion') {
+          requestAnimationFrame(() => requestAnimationFrame(() => this.createTimelineChart()));
+        }
       },
       error: () => {
         this.timelineError = 'No se pudo cargar el historial';
@@ -206,9 +217,11 @@ export class App implements OnInit {
     this.editingPlayer = false;
     this.activeTab = 'info';
     this.timeline = [];
+    this.selectedSkill = 'overall';
     this.analysis.set('');
     this.analysisError.set('');
     if (this.chart) this.chart.destroy();
+    if (this.timelineChart) this.timelineChart.destroy();
   }
 
   openCreateForm() {
@@ -257,12 +270,17 @@ export class App implements OnInit {
   savePlayer() {
     this.editError = '';
 
-    if (!this.selectedPlayer.club_name || !this.selectedPlayer.nationality_name || !this.selectedPlayer.player_positions) {
-      this.editError = 'Todos los campos son obligatorios';
+    if (!this.selectedPlayer.short_name || !this.selectedPlayer.club_name || !this.selectedPlayer.nationality_name || !this.selectedPlayer.player_positions) {
+      this.editError = 'Nombre, club, nacionalidad y posición son obligatorios';
       return;
     }
     if (this.selectedPlayer.overall < 1 || this.selectedPlayer.overall > 100) {
       this.editError = 'Overall debe estar entre 1 y 100';
+      return;
+    }
+    const skills = ['pace', 'shooting', 'passing', 'dribbling', 'defending', 'physic'];
+    if (skills.some(s => this.selectedPlayer[s] < 0 || this.selectedPlayer[s] > 100)) {
+      this.editError = 'Las skills deben estar entre 0 y 100';
       return;
     }
 
@@ -326,6 +344,60 @@ export class App implements OnInit {
     if (p.includes('CDM') || p.includes('CM') || p.includes('CAM') || p.includes('LM') || p.includes('RM')) return 'pos-mid';
     if (p.includes('LW') || p.includes('RW') || p.includes('CF') || p.includes('ST')) return 'pos-att';
     return 'pos-default';
+  }
+
+  updateTimelineChart() {
+    this.createTimelineChart();
+  }
+
+  createTimelineChart() {
+    const canvas: any = document.getElementById('timelineChart');
+    if (!canvas) return;
+    if (this.timelineChart) this.timelineChart.destroy();
+
+    const labels = this.timeline.map((v: any) => `FIFA ${v.fifa_version}`);
+    const data = this.timeline.map((v: any) => v[this.selectedSkill]);
+
+    const color = '#6366f1';
+    const gridColor = this.darkMode ? 'rgba(148,163,184,0.15)' : 'rgba(100,116,139,0.2)';
+    const labelColor = this.darkMode ? '#94a3b8' : '#64748b';
+
+    this.timelineChart = new Chart(canvas, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label: this.selectedSkill,
+          data,
+          borderColor: color,
+          backgroundColor: 'rgba(99,102,241,0.1)',
+          borderWidth: 2,
+          pointBackgroundColor: color,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          tension: 0.3,
+          fill: true,
+        }],
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            min: 0, max: 100,
+            grid: { color: gridColor },
+            ticks: { color: labelColor },
+          },
+          x: {
+            grid: { color: gridColor },
+            ticks: { color: labelColor },
+          },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: (ctx: any) => ` ${ctx.label}: ${ctx.raw}` } },
+        },
+      },
+    });
   }
 
   createChart() {

@@ -672,6 +672,37 @@ canvas { margin: 16px 0; }
   font-size: 0.82rem;
 }
 
+/* ── Selector de skill en evolución ── */
+.skill-selector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+
+  label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: $text-muted;
+    white-space: nowrap;
+  }
+
+  select {
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1.5px solid $border;
+    background: #f8fafc;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: $text;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    &:focus { border-color: $primary; }
+  }
+}
+
 .analyze-section { margin-top: 4px; }
 
 .btn-analyze {
