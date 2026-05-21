@@ -19,9 +19,9 @@ Permite explorar, gestionar y analizar jugadores de FIFA (masculinos y femeninos
 ### Modal de jugador — tres tabs
 | Tab | Contenido |
 |-----|-----------|
-| **Info** | Club, nacionalidad, posición — editable en línea |
+| **Info** | Club, nacionalidad, posición — editable en línea (nombre, club, nacionalidad, posición, overall y las 6 skills) |
 | **Skills** | Barras de estadísticas + Radar Chart (Chart.js) |
-| **Evolución** | Historial por versión FIFA + análisis narrativo con IA |
+| **Evolución** | Gráfico de línea por skill seleccionable + tabla con historial por versión FIFA + análisis narrativo con IA |
 
 ### Análisis con IA
 - Usa **Groq API (llama-3.1-8b-instant)** para generar un párrafo narrativo sobre la evolución del jugador a lo largo de las versiones FIFA
