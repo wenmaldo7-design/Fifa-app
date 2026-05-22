@@ -32,6 +32,7 @@ Permite explorar, gestionar y analizar jugadores de FIFA (masculinos y femeninos
 - **Diseño responsive**: en móvil las filas de la tabla se convierten en tarjetas
 - Paginación simplificada en pantallas pequeñas (`Pág. X / Y`)
 - Fotos de jugadores desde sofifa.com con fallback a ícono
+- Columna de edad por versión FIFA en tabla y modal
 
 ---
 
@@ -116,6 +117,18 @@ POST   /players/timeline/analyze # Análisis con IA
 ```
 
 **Parámetros de filtro disponibles:** `name`, `club`, `position`, `nationality`, `gender`, `page`, `limit`
+
+---
+
+## Seguridad
+
+- **Contraseñas** hasheadas con bcrypt (10 rounds)
+- **JWT** con expiración de 1 día — tokens robados no son válidos indefinidamente
+- **Rate limiting** en el login: máximo 5 intentos por minuto por IP (devuelve `429` al superarlo), implementado con `@nestjs/throttler`
+- **Fail fast en JWT_SECRET**: si la variable de entorno no está definida, la app no arranca — evita correr con un secreto hardcodeado conocido
+- **CORS** restringido a los orígenes del frontend
+- **Validación global** de entrada con `ValidationPipe` + class-validator
+- **SQL injection** prevenido por las queries parametrizadas de Sequelize
 
 ---
 
