@@ -67,6 +67,7 @@
             <th>Club</th>
             <th class="col-nationality">Nacionalidad</th>
             <th>Posición</th>
+            <th class="col-age">Edad</th>
             <th>Overall</th>
           </tr>
         </thead>
@@ -84,6 +85,7 @@
                 {{ player.player_positions }}
               </span>
             </td>
+            <td class="col-age">{{ player.age ?? '—' }}</td>
             <td>
               <span class="overall-badge" [ngClass]="overallClass(player.overall)">
                 {{ player.overall }}
@@ -140,6 +142,7 @@
           <div class="modal-info" *ngIf="!editingPlayer">
             <div class="info-row"><span class="info-label">Club</span><span>{{ selectedPlayer.club_name || 'Sin club' }}</span></div>
             <div class="info-row"><span class="info-label">Nacionalidad</span><span>{{ selectedPlayer.nationality_name }}</span></div>
+            <div class="info-row"><span class="info-label">Edad</span><span>{{ selectedPlayer.age ?? '—' }}</span></div>
             <div class="info-row">
               <span class="info-label">Posición</span>
               <span class="pos-badge" [ngClass]="positionClass(selectedPlayer.player_positions)">{{ selectedPlayer.player_positions }}</span>

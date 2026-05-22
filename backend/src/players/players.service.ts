@@ -210,6 +210,7 @@ Escribe solo el párrafo, sin títulos ni listas.`;
             physic: Number(data.physic),
             fifa_version: Number(data.fifa_version),
             fifa_update: Number(data.fifa_update) || 0,
+            age: Number(data.age) || null,
             gender: data.gender || gender,
             player_face_url: data.player_face_url || '',
           });

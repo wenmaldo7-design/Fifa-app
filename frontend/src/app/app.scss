@@ -972,8 +972,11 @@ canvas { margin: 16px 0; }
       text-align: right;
     }
 
+    /* Edad — oculta en tarjeta */
+    td:nth-child(6) { display: none; }
+
     /* Overall */
-    td:nth-child(6) {
+    td:nth-child(7) {
       grid-column: 3;
       grid-row: 2;
       text-align: right;
