@@ -17,11 +17,11 @@ import { JwtStrategy } from './jwt.strategy';
     PassportModule,
 
     JwtModule.register({
-      secret: process.env.JWT_SECRET || 'super-secret-key',
-
-      signOptions: {
-        expiresIn: '1d',
-      },
+      secret: (() => {
+        if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET no está definido en las variables de entorno');
+        return process.env.JWT_SECRET;
+      })(),
+      signOptions: { expiresIn: '1d' },
     }),
   ],
 
