@@ -4,13 +4,17 @@
 
   <header class="app-header">
     <div class="header-brand">
-      <i class="bi bi-trophy-fill header-icon"></i>
-      <span class="header-title">FIFA Players</span>
+      <div class="header-icon-wrap">
+        <i class="bi bi-trophy-fill header-icon"></i>
+      </div>
+      <span class="header-title">FIFA <span class="header-title-accent">Players</span></span>
     </div>
     <div class="header-actions">
-      <button class="btn-logout" (click)="logout()"><i class="bi bi-box-arrow-right"></i> Cerrar sesión</button>
       <button class="btn-darkmode" (click)="toggleDarkMode()" [title]="darkMode ? 'Modo claro' : 'Modo oscuro'">
         <i [class]="darkMode ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill'"></i>
+      </button>
+      <button class="btn-logout" (click)="logout()">
+        <i class="bi bi-box-arrow-right"></i> Cerrar sesión
       </button>
     </div>
   </header>

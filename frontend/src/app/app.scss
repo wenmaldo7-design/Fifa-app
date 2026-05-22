@@ -23,14 +23,15 @@ body {
 
 /* ── Header ── */
 .app-header {
-  background: linear-gradient(135deg, $primary-deeper 0%, $primary-dark 60%, $primary 100%);
+  background: $primary-deeper;
   color: white;
   padding: 0 32px;
-  height: 64px;
+  height: 68px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.35);
+  border-bottom: 2px solid $primary;
+  box-shadow: 0 4px 24px rgba(99, 102, 241, 0.25);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -39,22 +40,56 @@ body {
 .header-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.header-icon-wrap {
+  width: 38px;
+  height: 38px;
+  background: rgba(99, 102, 241, 0.25);
+  border: 1.5px solid rgba(99, 102, 241, 0.5);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.header-icon {
+  font-size: 1.2rem;
+  color: #a5b4fc;
+}
+
+.header-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.header-title {
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.header-title-accent {
+  color: #a5b4fc;
+}
+
+.header-subtitle {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
-}
-
-.header-icon { font-size: 1.6rem; }
-
-.header-title {
-  font-size: 1.3rem;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  gap: 8px;
 }
 
 /* ── Container ── */
@@ -144,16 +179,24 @@ body {
 }
 
 .btn-logout {
-  padding: 8px 16px;
-  border: 1.5px solid rgba(255,255,255,0.4);
-  border-radius: 8px;
+  padding: 7px 16px;
+  border: 1.5px solid rgba(255,255,255,0.18);
+  border-radius: 20px;
   background: transparent;
-  color: white;
+  color: rgba(255,255,255,0.8);
   font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 
-  &:hover { background: rgba(255,255,255,0.15); }
+  &:hover {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.35);
+    color: white;
+  }
 }
 
 .btn-page {
@@ -819,14 +862,23 @@ canvas { margin: 16px 0; }
 
 /* ── Botón dark mode ── */
 .btn-darkmode {
-  background: rgba(255,255,255,0.15);
-  border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
-  font-size: 1.1rem;
+  width: 36px;
+  height: 36px;
+  background: rgba(255,255,255,0.08);
+  border: 1.5px solid rgba(255,255,255,0.18);
+  border-radius: 50%;
+  font-size: 1rem;
   cursor: pointer;
-  transition: background 0.2s;
-  &:hover { background: rgba(255,255,255,0.25); }
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.8);
+  &:hover {
+    background: rgba(255,255,255,0.15);
+    border-color: rgba(255,255,255,0.35);
+    color: white;
+  }
 }
 
 /* ── CSV bar ── */
