@@ -1,4 +1,6 @@
 import { Module, OnApplicationBootstrap } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Player } from './players/player.model';
 import { PlayersModule } from './players/players.module';
@@ -9,6 +11,7 @@ import { User } from './users/user.model';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
     SequelizeModule.forRoot({
       dialect: 'mysql',
       models: [Player, User],
@@ -24,6 +27,7 @@ import { User } from './users/user.model';
     AuthModule,
     UsersModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule implements OnApplicationBootstrap {
   constructor(private readonly usersService: UsersService) {}
