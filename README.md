@@ -139,6 +139,8 @@ POST   /players/timeline/analyze # Análisis con IA
 - **Sequelize** como ORM; los cambios de esquema se aplican con `ALTER TABLE` manual ya que `synchronize: true` no modifica tablas existentes
 - **Deduplicación en importación CSV**: el dataset femenino tiene múltiples filas por jugador por versión (una por parche). Se conserva solo la fila con el `fifa_update` más alto por clave `(short_name, fifa_version)`
 - **Fotos de jugadores**: se usa `referrerpolicy="no-referrer"` para evitar el bloqueo de hotlinking del CDN de sofifa.com
+- **LangChain para el análisis con IA**: se usa `@langchain/groq` con `ChatGroq` y `HumanMessage` para invocar el modelo. Se optó por esta integración directa en lugar de encadenar múltiples pasos (chains, memory, herramientas), ya que el caso de uso es un único prompt — LangChain agrega valor real en pipelines complejos con RAG o agentes
+- **Template-driven forms en lugar de Reactive Forms**: los formularios del proyecto (login, crear jugador, editar jugador) son simples y no requieren validaciones cruzadas ni generación dinámica de campos. Template-driven con `ngModel` es suficiente para estos casos; Reactive Forms aportaría mayor valor en formularios más complejos donde la lógica de validación necesita ser testeada de forma unitaria
 - Arquitectura **REST** con separación clara frontend / backend
 
 ---

@@ -1,3 +1,5 @@
+import { ChatGroq } from '@langchain/groq';
+import { HumanMessage } from '@langchain/core/messages';
 import { Parser } from 'json2csv';
 
 import { Op } from 'sequelize';
@@ -163,30 +165,15 @@ ${lines.join('\n')}
 
 Escribe solo el párrafo, sin títulos ni listas.`;
 
-    const response = await fetch(
-      'https://api.groq.com/openai/v1/chat/completions',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: 'llama-3.1-8b-instant',
-          messages: [{ role: 'user', content: prompt }],
-          temperature: 0.7,
-          max_tokens: 500,
-        }),
-      },
-    );
+    const model = new ChatGroq({
+      apiKey: process.env.GROQ_API_KEY,
+      model: 'llama-3.1-8b-instant',
+      temperature: 0.7,
+      maxTokens: 500,
+    });
 
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`Groq API error ${response.status}: ${err}`);
-    }
-
-    const data: any = await response.json();
-    return { analysis: data.choices[0].message.content.trim() };
+    const response = await model.invoke([new HumanMessage(prompt)]);
+    return { analysis: (response.content as string).trim() };
   }
 
   async importCsv(file: Express.Multer.File, gender = 'M') {
