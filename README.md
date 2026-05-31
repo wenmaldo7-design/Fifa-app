@@ -41,9 +41,9 @@ Permite explorar, gestionar y analizar jugadores de FIFA (masculinos y femeninos
 | Capa | Stack |
 |------|-------|
 | Frontend | Angular 21 · TypeScript · SCSS · Chart.js |
-| Backend | NestJS · Sequelize · JWT (Passport) |
+| Backend | NestJS · Sequelize · JWT (Passport) · @nestjs/throttler |
 | Base de datos | MySQL |
-| IA | Groq API — llama-3.1-8b-instant |
+| IA | LangChain (@langchain/groq) · Groq API · llama-3.1-8b-instant |
 | DevOps | Docker · Docker Compose |
 
 ---
